@@ -1,0 +1,14 @@
+Account 1:
+Name: earl
+Age: 59
+BirthYear: JANUARY 5 1966
+Email: wa@gmaik.com
+Country: PHILIPPINES
+---------------------------
+Account 2:
+Name: wapa
+Age: 60
+BirthYear: JANUARY 1 1965
+Email: dwad
+Country: CHINA
+---------------------------

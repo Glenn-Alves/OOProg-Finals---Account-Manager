@@ -1,5 +1,3 @@
-
-
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
@@ -9,92 +7,20 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
 import java.util.List;
-    
-// ---------------- ENUMS ----------------
-enum Country {
-    PHILIPPINES,
-    UNITED_STATES,
-    CANADA,
-    UNITED_KINGDOM,
-    AUSTRALIA,
-    JAPAN,
-    SOUTH_KOREA,
-    CHINA,
-    INDIA,
-    SINGAPORE,
-    MALAYSIA,
-    INDONESIA,
-    VIETNAM,
-    THAILAND,
-    GERMANY,
-    FRANCE,
-    ITALY,
-    SPAIN,
-    OTHER
-}
 
+import models.Account;
+import enums.Country;
+import enums.Months;
 
-enum Months {
-    JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE,
-    JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER
-}
-
-// ---------------- BASE / CHILD CLASSES ----------------
-class Person {
-    protected String name;
-    protected int age;
-    protected String birthdate; // e.g., JANUARY 15 2005
-    protected String email;
-
-    public Person(String name, int age, String birthdate, String email) {
-        this.name = name;
-        this.age = age;
-        this.birthdate = birthdate;
-        this.email = email;
-    }
-}
-
-class Account extends Person {
-    private Country country;
-
-    public Account(String name, int age, String birthdate, String email, Country country) {
-        super(name, age, birthdate, email);
-        this.country = country;
-    }
-
-    public Country getCountry() {
-        return country;
-    }
-
-    public void setLocation(Country c) {
-        this.country = c;
-    }
-
-    public void setName(String n) { this.name = n; }
-    public void setAge(int a) { this.age = a; }
-    public void setBirthdate(String b) { this.birthdate = b; }
-    public void setEmail(String e) { this.email = e; }
-
-    @Override
-    public String toString() {
-        return "Name: " + name +
-                "\nAge: " + age +
-                "\nBirthYear: " + birthdate +
-                "\nEmail: " + email +
-                "\nCountry: " + country;
-    }
-}
-
-// ---------------- MAIN APP ----------------
-public class OOProgFinals {
+public class Main {
 
     private static final String FILE_PATH = "accounts.txt";
+
     private JFrame frame;
     private JTable table;
     private DefaultTableModel tableModel;
     private final List<Account> accounts = new ArrayList<>();
 
-    // Form fields
     private JTextField nameField;
     private JTextField ageField;
     private JComboBox<Months> monthBox;
@@ -103,127 +29,118 @@ public class OOProgFinals {
     private JTextField emailField;
     private JComboBox<Country> locBox;
 
-    // State for editing
     private int editingIndex = -1;
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new OOProgFinals().createAndShowGUI());
+        SwingUtilities.invokeLater(() -> new Main().createAndShowGUI());
     }
 
-    private void createAndShowGUI() {
-        loadAccountsFromFile();
-        
-        frame = new JFrame("Parreno's Account Manager");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setResizable(false);
-        frame.setSize(1280, 720);
-        frame.setLayout(new BorderLayout(10, 10));
-        
-        ImageIcon image = new ImageIcon("LOGO.png");
-        frame.setIconImage(image.getImage());
+   private void createAndShowGUI() {
+    loadAccountsFromFile();
+    
+    frame = new JFrame("Parreno's Account Manager");
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.setResizable(false);
+    frame.setSize(1280, 720);
+    frame.setLayout(new BorderLayout(10, 10));
+    
+    ImageIcon image = new ImageIcon("LOGO.png");
+    frame.setIconImage(image.getImage());
 
-        frame.getContentPane().setBackground(Color.black);;
+    frame.getContentPane().setBackground(new Color(0xc6c6c6));
 
-        // Left: Controls (Add / Form / Actions)
-        JPanel left = new JPanel();
-        left.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-        left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
-        left.setBackground(Color.BLACK);
-        left.setOpaque(true);
+    // Left: Controls
+    JPanel left = new JPanel();
+    left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
+    left.setBackground(new Color(0xc6c6c6));
+    left.setOpaque(true);
 
+    left.add(createFormPanel());
+    left.add(Box.createVerticalStrut(10));
+    left.add(createButtonsPanel());
 
-        left.add(createFormPanel());
-        left.add(Box.createVerticalStrut(10)); // space
-        left.add(createButtonsPanel());
+    // Right: Table view
+    JPanel right = new JPanel(new BorderLayout(8,8));
+    JLabel title = new JLabel("Registered Accounts:");
+    title.setFont(new Font("Roboto", Font.BOLD, 16));
+    title.setForeground(Color.BLACK);
+    right.add(title, BorderLayout.NORTH);
+    right.setBackground(new Color(0xc6c6c6));
+    right.setOpaque(true);
+    right.add(createTablePanel(), BorderLayout.CENTER);
 
-        // Right: Table view
-        JPanel right = new JPanel(new BorderLayout(8,8));
-        right.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-     
+    // Top: Search bar
+    JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
+    top.setBackground(new Color(0xc6c6c6));
+    
+    JLabel searchLabel = new JLabel("Search:"); 
+    searchLabel.setForeground(Color.BLACK);
+    top.add(searchLabel);
+    
+    JTextField searchField = new JTextField("Name or Email", 30);
+    searchField.setBackground(Color.WHITE);
+    searchField.setForeground(Color.BLACK);
+    searchField.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
 
-
-        JLabel title = new JLabel("Registered Accounts:");
-        title.setFont(new Font("Roboto", Font.BOLD, 16));
-        title.setForeground(new Color(0xF5B606));
-        right.add(title, BorderLayout.NORTH);
-        right.setBackground(Color.BLACK);
-        right.setOpaque(true);
-
-
-        right.add(createTablePanel(), BorderLayout.CENTER);
-
-
-        // Top: Search bar
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
-        top.setBackground(Color.BLACK);
-        JLabel searchLabel = new JLabel("Search:"); 
-        searchLabel.setForeground(Color.WHITE);
-        top.add(searchLabel);
-        JTextField searchField = new JTextField("Name or Email", 30);
-        searchField.setBackground(Color.WHITE);
-        searchField.setForeground(Color.GRAY);
-
-
-            searchField.addFocusListener(new FocusAdapter() {
+    searchField.addFocusListener(new FocusAdapter() {
         @Override
         public void focusGained(FocusEvent e) {
             if (searchField.getText().equals("Name or Email")) {
                 searchField.setText("");
-                searchField.setForeground(Color.BLACK);
-            }
-        }
-
-        @Override
-        public void focusLost(FocusEvent e) {
-            if (searchField.getText().isEmpty()) {
-                searchField.setText("Name or Email");
-                searchField.setForeground(Color.GRAY);
+                searchField.setForeground(Color.black);
             }
         }
     });
 
-        searchField.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
-        JButton searchBtn = new JButton("Search");
-        searchBtn.setBackground(new Color(0x1E1E1E));
-        searchBtn.setForeground(Color.WHITE);
-        searchBtn.setFocusPainted(false);
+    JButton searchBtn = new JButton("Search");
+    JButton refreshBtn = new JButton("Refresh");
 
-        JButton refreshBtn = new JButton("Refresh");
-        refreshBtn.setBackground(new Color(0x1E1E1E));
-        refreshBtn.setForeground(Color.WHITE);
-        refreshBtn.setFocusPainted(false);
-        top.setFont(new Font("Roboto", Font.BOLD, 12));
-        top.add(searchField);
-        top.add(searchBtn);
-        top.add(refreshBtn);
-        top.setBackground(Color.BLACK);
-        top.setOpaque(true);
+    // APPLY HOVER EFFECT TO TOP BUTTONS
+    JButton[] topButtons = {searchBtn, refreshBtn};
+    for (JButton btn : topButtons) {
+        Color idle = Color.WHITE;
+        Color hover = new Color(0xdfdfdf);
+        Color pressed = new Color(0xaaaaaa);
 
-        for (Component c : top.getComponents()) {
-    if (c instanceof JLabel) {
-        c.setForeground(Color.WHITE);
+        btn.setBackground(idle);
+        btn.setForeground(Color.BLACK);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setOpaque(true);
+
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { btn.setBackground(hover); }
+            public void mouseExited(MouseEvent e) { btn.setBackground(idle); }
+            public void mousePressed(MouseEvent e) { btn.setBackground(pressed); }
+            public void mouseReleased(MouseEvent e) { 
+                btn.setBackground(btn.getBounds().contains(e.getPoint()) ? hover : idle); 
+            }
+        });
     }
+
+    top.add(searchField);
+    top.add(searchBtn);
+    top.add(refreshBtn);
+
+    searchBtn.addActionListener(e -> doSearch(searchField.getText().trim()));
+    refreshBtn.addActionListener(e -> refreshTable());
+
+    frame.add(top, BorderLayout.NORTH);
+    frame.add(left, BorderLayout.WEST);
+    frame.add(right, BorderLayout.CENTER);
+
+    refreshTable();
+    frame.setLocationRelativeTo(null);
+    frame.setVisible(true);
 }
-        searchBtn.addActionListener(e -> doSearch(searchField.getText().trim()));
-        refreshBtn.addActionListener(e -> refreshTable());
-
-        frame.add(top, BorderLayout.NORTH);
-        frame.add(left, BorderLayout.WEST);
-        frame.add(right, BorderLayout.CENTER);
-
-        refreshTable();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-    }
-
     private JPanel createFormPanel() {
     JPanel p = new JPanel(new GridLayout(10, 2, 6, 6));
-    p.setBackground(new Color(0x1E1E1E));
+    p.setBackground(new Color(0xdfdfdf));
 
     p.setBorder(
     BorderFactory.createCompoundBorder(
-        BorderFactory.createLineBorder(Color.WHITE, 1),
-        BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        BorderFactory.createLineBorder(new Color(0xb9b9b9), 1),
+        BorderFactory.createEmptyBorder(10, 10, 10, 12)
     )
 );
 
@@ -257,7 +174,7 @@ public class OOProgFinals {
     p.add(new JLabel("Country:")); p.add(locBox);
 
     // ===== #4 GOES HERE =====
-    Color bg = Color.WHITE;
+    Color bg = Color.white;
     Color fg = Color.BLACK;
 
     nameField.setBackground(bg);
@@ -281,7 +198,7 @@ public class OOProgFinals {
     // Label colors
     for (Component c : p.getComponents()) {
         if (c instanceof JLabel) {
-            c.setForeground(Color.WHITE);
+            c.setForeground(Color.BLACK);
         }
     }
 
@@ -292,15 +209,8 @@ public class OOProgFinals {
 
 
     private JPanel createButtonsPanel() {
-        JPanel p = new JPanel(new GridLayout(6,1,6,6));
-        p.setBackground(new Color(0x1E1E1E));
-        p.setBorder(
-            BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.WHITE, 1),
-                BorderFactory.createEmptyBorder(8, 8, 8, 8)
-            )
-        );
-
+        JPanel p = new JPanel(new GridLayout(6,6,6,3));
+        
         JButton addBtn = new JButton("Add Account");
         JButton editBtn = new JButton("Edit Selected");
         JButton saveEditBtn = new JButton("Save Edit");
@@ -314,14 +224,51 @@ public class OOProgFinals {
         p.add(deleteBtn);
         p.add(clearBtn);
         p.add(exportBtn);
-        p.setBackground(new Color(0x1E1E1E));
+        p.setBackground(Color.lightGray);
 
         for (Component c : p.getComponents()) {
             if (c instanceof JButton) {
-                c.setBackground(new Color(0x1E1E1E));
-                c.setForeground(Color.WHITE);
-                ((JButton) c).setFocusPainted(false);
+        JButton btn = (JButton) c;
+        
+        // Base Colors
+        Color idleColor = new Color(0xdfdfdf); // Your light gray
+        Color hoverColor = new Color(0xaaaaaa); // Darker gray for hover
+        
+        // Initial Style
+        btn.setBackground(idleColor);
+        btn.setForeground(Color.BLACK);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false); // Keeps it flat
+        btn.setContentAreaFilled(true);
+        btn.setOpaque(true);
+
+        // Hover Effect Logic
+        btn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                btn.setBackground(hoverColor);
             }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                btn.setBackground(idleColor);
+            }
+            
+            @Override
+            public void mousePressed(MouseEvent e) {
+                btn.setBackground(new Color(0x888888));
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (btn.getBounds().contains(e.getPoint())) {
+                    btn.setBackground(hoverColor);
+                } else {
+                    btn.setBackground(idleColor);
+                }
+            }
+        });
+    }
         }
 
         addBtn.addActionListener(e -> addAccount());
@@ -337,7 +284,8 @@ public class OOProgFinals {
                 JOptionPane.showMessageDialog(frame, "Error saving file: " + ex.getMessage());
             }
         });
-            
+        
+        
 
         return p;
     }
@@ -358,32 +306,24 @@ public class OOProgFinals {
     table = new JTable(tableModel);
 
     // 3️⃣ Style table
-    table.setBackground(new Color(0x1E1E1E));
-    table.setForeground(Color.WHITE);
-    table.setGridColor(new Color(0x1E1E1E));
-    table.setSelectionBackground(new Color(60, 60, 60));
-    table.setSelectionForeground(Color.WHITE);
+    table.setBackground(new Color(0xdfdfdf));
+    table.setForeground(Color.black);
+    table.setGridColor(new Color(0xdfdfdf));
+    table.setSelectionBackground(Color.lightGray);
+    table.setSelectionForeground(Color.black);
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setAutoCreateRowSorter(false);
 
     // 4️⃣ Header styling
     JTableHeader header = table.getTableHeader();
-    header.setBackground(new Color(0x1E1E1E));
-    header.setForeground(Color.WHITE);
+    header.setBackground(new Color(0xfdfdfd));
+    header.setForeground(Color.black);
 
     // 5️⃣ ScrollPane
     JScrollPane sp = new JScrollPane(table);
     sp.setPreferredSize(new Dimension(520, 400));
-    sp.getViewport().setBackground(new Color(0x1E1E1E));
-    sp.setBackground(Color.WHITE);
-
-    // 6️⃣ Border
-  sp.setBorder(
-        BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Color.BLACK, 1),
-            BorderFactory.createEmptyBorder(1, 1, 1, 1)
-        )
-    );
+    sp.getViewport().setBackground(new Color(0xdfdfdf));
+    sp.setBackground(Color.black);
 
 
     return sp;
@@ -444,11 +384,14 @@ public class OOProgFinals {
         editingIndex = modelIndex;
         Account a = accounts.get(modelIndex);
 
-        nameField.setText(a.name);
-        ageField.setText(String.valueOf(a.age));
+                nameField.setText(a.getName());
+        ageField.setText(String.valueOf(a.getAge()));
+        emailField.setText(a.getEmail());
+
+String[] parts = a.getBirthdate().split(" ");
+
         // parse birthdate in form "MONTH day year"
         try {
-            String[] parts = a.birthdate.split(" ");
             Months m = Months.valueOf(parts[0]);
             int day = Integer.parseInt(parts[1]);
             int year = Integer.parseInt(parts[2]);
@@ -456,7 +399,6 @@ public class OOProgFinals {
             dayBox.setSelectedItem(day);
             yearBox.setSelectedItem(year);
         } catch (NumberFormatException ignored) {}
-        emailField.setText(a.email);
         locBox.setSelectedItem(a.getCountry());
     }
 
@@ -530,13 +472,15 @@ public class OOProgFinals {
         if (q.isEmpty()) { refreshTable(); return; }
         String ql = q.toLowerCase();
         List<Account> filtered = new ArrayList<>();
-        for (Account a : accounts) {
-            if (a.name.toLowerCase().contains(ql) ||
-                a.email.toLowerCase().contains(ql) ||
-                a.getCountry().name().toLowerCase().contains(ql)) {
-                filtered.add(a);
-            }
-        }
+       for (Account a : accounts) {
+    if (a.getName().toLowerCase().contains(ql) ||
+        a.getEmail().toLowerCase().contains(ql) ||
+        a.getCountry().name().toLowerCase().contains(ql)) {
+        filtered.add(a);
+    }
+}
+populateTable(filtered);
+
         populateTable(filtered);
     }
 
@@ -549,13 +493,14 @@ public class OOProgFinals {
         int i = 1;
         for (Account a : list) {
             tableModel.addRow(new Object[]{
-                    i++,
-                    a.name,
-                    a.age,
-                    a.birthdate,
-                    a.email,
-                    a.getCountry().name()
-            });
+    i++,
+    a.getName(),
+    a.getAge(),
+    a.getBirthdate(),
+    a.getEmail(),
+    a.getCountry().name()
+});
+
         }
     }
 
