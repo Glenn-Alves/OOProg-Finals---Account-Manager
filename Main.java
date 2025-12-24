@@ -35,6 +35,12 @@ public class Main {
         SwingUtilities.invokeLater(() -> new Main().createAndShowGUI());
     }
 
+    private boolean isValidEmail(String email) {
+    // Basic email validation regex pattern
+    String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+    return email.matches(emailRegex);
+}
+
    private void createAndShowGUI() {
     loadAccountsFromFile();
     
@@ -346,36 +352,52 @@ public class Main {
     }
 
     private void addAccount() {
-        try {
-            String name = nameField.getText().trim();
-            if (name.isEmpty()) { JOptionPane.showMessageDialog(frame, "Name is required."); return; }
-
-// Prevent numbers or symbols
-            if (!name.matches("[A-Za-z ]+")) {
-                JOptionPane.showMessageDialog(frame, "Name must not contain numbers or special characters.");
-                return;
-            }
-       
-            int age = Integer.parseInt(ageField.getText().trim());
-            Months m = (Months) monthBox.getSelectedItem();
-            int day = (Integer) dayBox.getSelectedItem();
-            int year = (Integer) yearBox.getSelectedItem();
-            String birthdate = m + " " + day + " " + year;
-            String email = emailField.getText().trim();
-            Country loc = (Country) locBox.getSelectedItem();
-
-            Account acc = new Account(name, age, birthdate, email, loc);
-            accounts.add(acc);
-            writeAllToFile(); // overwrite file to keep consistent
-            refreshTable();
-            clearForm();
-            JOptionPane.showMessageDialog(frame, "Account added.");
-        } catch (NumberFormatException nfe) {
-            JOptionPane.showMessageDialog(frame, "Invalid age. Please check birthdate selections.");
-        } catch (HeadlessException | IOException ex) {
-            JOptionPane.showMessageDialog(frame, "Error adding account: " + ex.getMessage());
+    try {
+        String name = nameField.getText().trim();
+        if (name.isEmpty()) { 
+            JOptionPane.showMessageDialog(frame, "Name is required."); 
+            return; 
         }
+
+        // Prevent numbers or symbols in name
+        if (!name.matches("[A-Za-z ]+")) {
+            JOptionPane.showMessageDialog(frame, "Name must not contain numbers or special characters.");
+            return;
+        }
+       
+        int age = Integer.parseInt(ageField.getText().trim());
+        Months m = (Months) monthBox.getSelectedItem();
+        int day = (Integer) dayBox.getSelectedItem();
+        int year = (Integer) yearBox.getSelectedItem();
+        String birthdate = m + " " + day + " " + year;
+        String email = emailField.getText().trim();
+        Country loc = (Country) locBox.getSelectedItem();
+        
+        // === EMAIL VALIDATION START ===
+        if (email.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Email is required.");
+            return;
+        }
+        
+        if (!isValidEmail(email)) {
+            JOptionPane.showMessageDialog(frame, "Please enter a valid email address.\n" +
+                "Example: user@example.com");
+            return;
+        }
+        // === EMAIL VALIDATION END ===
+
+        Account acc = new Account(name, age, birthdate, email, loc);
+        accounts.add(acc);
+        writeAllToFile(); // overwrite file to keep consistent
+        refreshTable();
+        clearForm();
+        JOptionPane.showMessageDialog(frame, "Account added.");
+    } catch (NumberFormatException nfe) {
+        JOptionPane.showMessageDialog(frame, "Invalid age. Please check birthdate selections.");
+    } catch (HeadlessException | IOException ex) {
+        JOptionPane.showMessageDialog(frame, "Error adding account: " + ex.getMessage());
     }
+}
 
     private void loadSelectedToForm() {
         int sel = table.getSelectedRow();
@@ -402,43 +424,63 @@ String[] parts = a.getBirthdate().split(" ");
         locBox.setSelectedItem(a.getCountry());
     }
 
-    private void saveEdit() {
-        if (editingIndex == -1) { JOptionPane.showMessageDialog(frame, "No account loaded for editing."); return; }
+   private void saveEdit() {
+    if (editingIndex == -1) { 
+        JOptionPane.showMessageDialog(frame, "No account loaded for editing."); 
+        return; 
+    }
+    
+    try {
+        String name = nameField.getText().trim();
+        if (name.isEmpty()) { 
+            JOptionPane.showMessageDialog(frame, "Name is required."); 
+            return; 
+        }
         
-        try {
-            String name = nameField.getText().trim();
-            if (name.isEmpty()) { JOptionPane.showMessageDialog(frame, "Name is required."); return; }
-            if (!name.matches("[A-Za-z ]+")) {
+        if (!name.matches("[A-Za-z ]+")) {
             JOptionPane.showMessageDialog(frame, "Name must not contain numbers or special characters.");
             return;
-           }
-            
-            int age = Integer.parseInt(ageField.getText().trim());
-            Months m = (Months) monthBox.getSelectedItem();
-            int day = (Integer) dayBox.getSelectedItem();
-            int year = (Integer) yearBox.getSelectedItem();
-            String birthdate = m + " " + day + " " + year;
-            String email = emailField.getText().trim();
-            Country loc = (Country) locBox.getSelectedItem();
-
-            Account a = accounts.get(editingIndex);
-            a.setName(name);
-            a.setAge(age);
-            a.setBirthdate(birthdate);
-            a.setEmail(email);
-            a.setLocation(loc);
-
-            writeAllToFile();
-            refreshTable();
-            clearForm();
-            editingIndex = -1;
-            JOptionPane.showMessageDialog(frame, "Account updated.");
-        } catch (NumberFormatException nfe) {
-            JOptionPane.showMessageDialog(frame, "Invalid age. Please check birthdate selections.");
-        } catch (HeadlessException | IOException ex) {
-            JOptionPane.showMessageDialog(frame, "Error saving edit: " + ex.getMessage());
         }
+        
+        int age = Integer.parseInt(ageField.getText().trim());
+        Months m = (Months) monthBox.getSelectedItem();
+        int day = (Integer) dayBox.getSelectedItem();
+        int year = (Integer) yearBox.getSelectedItem();
+        String birthdate = m + " " + day + " " + year;
+        String email = emailField.getText().trim();
+        Country loc = (Country) locBox.getSelectedItem();
+        
+        // === EMAIL VALIDATION START ===
+        if (email.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Email is required.");
+            return;
+        }
+        
+        if (!isValidEmail(email)) {
+            JOptionPane.showMessageDialog(frame, "Please enter a valid email address.\n" +
+                "Example: user@example.com");
+            return;
+        }
+        // === EMAIL VALIDATION END ===
+
+        Account a = accounts.get(editingIndex);
+        a.setName(name);
+        a.setAge(age);
+        a.setBirthdate(birthdate);
+        a.setEmail(email);
+        a.setLocation(loc);
+
+        writeAllToFile();
+        refreshTable();
+        clearForm();
+        editingIndex = -1;
+        JOptionPane.showMessageDialog(frame, "Account updated.");
+    } catch (NumberFormatException nfe) {
+        JOptionPane.showMessageDialog(frame, "Invalid age. Please check birthdate selections.");
+    } catch (HeadlessException | IOException ex) {
+        JOptionPane.showMessageDialog(frame, "Error saving edit: " + ex.getMessage());
     }
+}
 
     private void deleteSelected() {
         int sel = table.getSelectedRow();
